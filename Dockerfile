@@ -25,5 +25,9 @@ RUN cat /etc/passwd | \
 
 RUN pwsh -command "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted;Install-Module VMware.PowerCLI 2>&1 | out-null"
 
+USER 0
+RUN chgrp -R 0 /home
+USER user
+
 ENTRYPOINT ["/home/user/bin/entrypoint.sh"]
 CMD ["cmd"]
