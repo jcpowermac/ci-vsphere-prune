@@ -2,19 +2,20 @@
 
 Set-PowerCLIConfiguration -InvalidCertificateAction:Ignore -Confirm:$false
 
-$server = "vcenter.sddc-35-155-70-129.vmwarevmc.com"
-
 try {
-    Connect-VIServer $server
+    $terraform = Get-Content -Raw -Path /var/run/secrets/ci.openshift.io/cluster-profile/vmc.secret.auto.tfvars
+    $terraform -match 'vsphere_password\s=\s"(?<password>[\S]+)"'
+    $password = $Matches.password
+    $terraform -match 'vsphere_user\s=\s"(?<username>[\S]+)"'
+    $username = $Matches.username
+    $server = "vcenter.sddc-44-236-21-251.vmwarevmc.com"
+    Connect-VIServer -Server $server -User $username -Password $password
 }
 catch {
     Write-Error "Unable to connect to vCenter: "
     Write-Error $_
     exit
 }
-
-while($true)
-{
 
 $rps = Get-ResourcePool | Where-Object { $_.Name -match 'ci' }
 
@@ -65,11 +66,5 @@ foreach ($vm in $vms) {
             $vm | Stop-VM -Confirm:$false
             $vm | Remove-VM -DeletePermanently:$true -Confirm:$false
 }
-
-	Write-Host "sleeping for an half hour..."
-	start-sleep -seconds 1800
-
-}
-
 
 Disconnect-VIServer -Confirm:$false -Force:$true
