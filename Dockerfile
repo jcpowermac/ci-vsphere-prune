@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/powershell:latest
 
-RUN useradd -u 1000 -G users,wheel,root -d /home/user --shell /bin/bash -m user && \
+RUN useradd -u 1000 -G users,root -d /home/user --shell /bin/bash -m user && \
     usermod -p "*" user
 
 COPY bin/ /home/user/bin/
